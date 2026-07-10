@@ -1,34 +1,66 @@
-# OAuth Credentials
-config/token.json
-config/client_secret.json
-config/client_secrets.json
+# ==========================================
+# Build Artifacts
+# ==========================================
+build/
+dist/
+*.spec
 
+# PyInstaller Executable
+ChessShortsCreator.exe
+
+# ==========================================
+# Google OAuth Credentials
+# ==========================================
 client_secret.json
 client_secrets.json
 token.json
 
-# Python
-__pycache__/
-*.pyc
+config/client_secret.json
+config/client_secrets.json
+config/token.json
 
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ==========================================
+# Environment
+# ==========================================
+.env
+.venv/
+venv/
+
+# ==========================================
 # Logs
+# ==========================================
 logs/
 *.log
+brochure_debug.log
 
-# Temporary
-temp/
-*.tmp
-
-# Generated videos
+# ==========================================
+# Generated Output
+# ==========================================
 output/
+temp/
+
+# ==========================================
+# Input Processing
+# ==========================================
 inputs/archive/
 inputs/processed/
 inputs/failed/
 
+# ==========================================
 # IDE
+# ==========================================
 .vscode/
 .idea/
 
+# ==========================================
 # Windows
+# ==========================================
 Thumbs.db
 Desktop.ini
