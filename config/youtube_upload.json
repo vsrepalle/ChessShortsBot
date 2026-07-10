@@ -1,0 +1,12 @@
+﻿{
+  "tokenFile": "config/token.json",
+  "clientSecretFile": "config/client_secret.json",
+  "categoryId": "22",
+  "privacyStatus": "private",
+  "selfDeclaredMadeForKids": false,
+  "madeForKids": false,
+  "uploadRetries": 3,
+  "retryDelaySeconds": 5,
+  "archiveVideo": true,
+  "metadataFolder": "output/metadata"
+}

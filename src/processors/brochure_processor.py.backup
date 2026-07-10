@@ -1,0 +1,743 @@
+﻿"""
+Brochure Processor - Extracts information from chess tournament brochures
+and creates videos with the brochure content and extracted information.
+"""
+
+import os
+import shutil
+import logging
+import re
+import cv2
+import numpy as np
+from pathlib import Path
+from datetime import datetime
+from src.ocr.extractor import OCRExtractor
+from moviepy.editor import (
+    ImageClip, 
+    CompositeVideoClip, 
+    TextClip, 
+    ColorClip,
+    VideoFileClip,
+    concatenate_videoclips
+)
+from moviepy.video.fx.all import fadein, fadeout
+import subprocess
+import sys
+import json
+import hashlib
+
+# Print debug at module load
+print("\n" + "="*80)
+print(f"📄 LOADING BROCHURE_PROCESSOR.PY")
+print(f"📁 File location: {__file__}")
+print(f"🕐 Time: {datetime.now()}")
+print("="*80 + "\n")
+
+# File debugger class
+class FileDebugger:
+    """Helper class to track file operations and verify file integrity"""
+    
+    def __init__(self, log_file="brochure_debug.log"):
+        self.log_file = log_file
+        self.operations = []
+        self._clear_log()
+        
+    def _clear_log(self):
+        """Clear previous log"""
+        with open(self.log_file, 'w') as f:
+            f.write(f"=== FILE DEBUG LOG STARTED AT {datetime.now()} ===\n")
+    
+    def log_operation(self, operation, file_path, details=None):
+        """Log a file operation with timestamp and details"""
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "operation": operation,
+            "file": str(file_path) if file_path else "None",
+            "details": details or {},
+            "exists": os.path.exists(file_path) if file_path else False,
+            "size": os.path.getsize(file_path) if file_path and os.path.exists(file_path) else 0,
+            "hash": self.get_file_hash(file_path) if file_path and os.path.exists(file_path) else None
+        }
+        self.operations.append(entry)
+        
+        # Write to log file immediately
+        with open(self.log_file, 'a') as f:
+            f.write(f"\n[{entry['timestamp']}] {operation}\n")
+            f.write(f"  File: {entry['file']}\n")
+            f.write(f"  Exists: {entry['exists']}\n")
+            f.write(f"  Size: {entry['size']} bytes\n")
+            f.write(f"  Hash: {entry['hash']}\n")
+            if details:
+                f.write(f"  Details: {json.dumps(details, indent=2)}\n")
+            f.write("-" * 80 + "\n")
+    
+    def get_file_hash(self, file_path):
+        """Get file hash for verification"""
+        try:
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as f:
+                    return hashlib.md5(f.read()).hexdigest()
+        except:
+            return None
+        return None
+
+# Global debugger instance
+file_debugger = FileDebugger("brochure_debug.log")
+
+class BrochureProcessor:
+    def __init__(self, config=None):
+        self.config = config
+        self.ocr = OCRExtractor()
+        self.output_dir = Path("output/videos")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.preview_dir = Path("output/previews")
+        self.preview_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Log initialization
+        file_debugger.log_operation("INIT", __file__, {
+            "output_dir": str(self.output_dir),
+            "preview_dir": str(self.preview_dir)
+        })
+        
+        print("\n" + "="*80)
+        print("🔍 BROCHURE PROCESSOR INITIALIZED")
+        print("="*80)
+        print(f"📁 Output directory: {self.output_dir}")
+        print(f"📁 Preview directory: {self.preview_dir}")
+        print(f"📄 Debug log: brochure_debug.log")
+        print("="*80 + "\n")
+
+    def process(self, brochure_path):
+        print("\n" + "="*80)
+        print("📌 PROCESSING BROCHURE")
+        print("="*80)
+        print(f"Input file: {brochure_path}")
+        print(f"File exists: {os.path.exists(brochure_path)}")
+        if os.path.exists(brochure_path):
+            print(f"File size: {os.path.getsize(brochure_path)} bytes")
+        print("="*80 + "\n")
+        
+        file_debugger.log_operation("PROCESS_START", brochure_path)
+        
+        logging.info("=" * 70)
+        logging.info("BROCHURE PROCESS STARTED")
+        logging.info(f"Brochure = {brochure_path}")
+
+        # Step 1: Extract text from brochure
+        logging.info("Calling OCRExtractor.extract()")
+        text = self.ocr.extract(brochure_path)
+        logging.info("OCR completed")
+        logging.info(f"OCR Text Length = {len(text)}")
+        
+        file_debugger.log_operation("OCR_COMPLETE", brochure_path, {
+            "text_length": len(text),
+            "first_100_chars": text[:100] if text else "No text"
+        })
+
+        # Step 2: Extract tournament information
+        logging.info("Extracting tournament information")
+        info = {
+            "brochure": brochure_path,
+            "raw_text": text,
+            "tournament_name": self.find_tournament(text),
+            "venue": self.find_venue(text),
+            "dates": self.find_dates(text),
+            "entry_fee": self.find_entry_fee(text),
+            "prize_fund": self.find_prize(text),
+            "contact": self.find_contact(text),
+            "email": self.find_email(text),
+            "website": self.find_website(text),
+            "categories": self.find_categories(text)
+        }
+        logging.info("Brochure processing finished")
+        logging.info(info)
+        
+        file_debugger.log_operation("INFO_EXTRACTED", brochure_path, info)
+
+        # Step 3: Create video from brochure
+        logging.info("Creating video from brochure...")
+        print("\n🎬 GENERATING VIDEO...")
+        print(f"Using brochure: {brochure_path}")
+        
+        video_path = self.create_brochure_video(brochure_path, info)
+        
+        if video_path and os.path.exists(video_path):
+            print(f"✅ Video created: {video_path}")
+            print(f"📊 Video size: {os.path.getsize(video_path)} bytes")
+            file_debugger.log_operation("VIDEO_CREATED", video_path, {
+                "source": brochure_path,
+                "size": os.path.getsize(video_path)
+            })
+        else:
+            print("❌ Video creation failed!")
+            file_debugger.log_operation("VIDEO_CREATION_FAILED", video_path)
+        
+        logging.info(f"Video created: {video_path}")
+        
+        # Step 4: Preview video and ask for confirmation
+        print("\n👁️ PREVIEW AND CONFIRM...")
+        confirm = self.preview_and_confirm(video_path)
+        file_debugger.log_operation("USER_CONFIRMATION", video_path, {
+            "confirmed": confirm
+        })
+        
+        if not confirm:
+            logging.info("User chose to skip upload")
+            print("❌ User skipped upload")
+            return {
+                "video": None,
+                "thumbnail": None,
+                "metadata": info,
+                "skipped": True
+            }
+        
+        # Step 5: Return result for pipeline
+        print("✅ Upload confirmed by user")
+        return {
+            "video": video_path,
+            "thumbnail": None,
+            "metadata": {
+                "Title": Path(brochure_path).stem,
+                "Tournament": info['tournament_name'],
+                "Venue": info['venue'],
+                "Dates": ', '.join(info['dates']) if info['dates'] else ''
+            },
+            "skipped": False
+        }
+
+    def create_brochure_video(self, brochure_path, info):
+        """
+        Create a professional video from the brochure image with overlays
+        """
+        print("\n" + "="*80)
+        print("🎬 CREATING VIDEO")
+        print("="*80)
+        print(f"Source image: {brochure_path}")
+        print(f"File exists: {os.path.exists(brochure_path)}")
+        if os.path.exists(brochure_path):
+            print(f"File size: {os.path.getsize(brochure_path)} bytes")
+        print("="*80 + "\n")
+        
+        file_debugger.log_operation("VIDEO_CREATE_START", brochure_path)
+        
+        try:
+            # Check if image exists
+            if not os.path.exists(brochure_path):
+                logging.error(f"Image file not found: {brochure_path}")
+                print(f"❌ ERROR: Image file not found: {brochure_path}")
+                file_debugger.log_operation("ERROR", brochure_path, {"error": "File not found"})
+                return self.create_fallback_video(info)
+            
+            # Try to load with OpenCV first for debugging
+            print("📷 Loading image with OpenCV...")
+            img_cv = cv2.imread(brochure_path)
+            if img_cv is None:
+                logging.error(f"OpenCV could not load image: {brochure_path}")
+                print(f"❌ ERROR: OpenCV could not load image: {brochure_path}")
+                file_debugger.log_operation("ERROR", brochure_path, {"error": "OpenCV load failed"})
+                return self.create_fallback_video(info)
+            
+            print(f"✅ OpenCV loaded image successfully")
+            print(f"  Shape: {img_cv.shape}")
+            print(f"  Type: {img_cv.dtype}")
+            
+            # Save a debug copy
+            debug_filename = f"debug_{Path(brochure_path).stem}_{datetime.now().strftime('%H%M%S')}.jpg"
+            debug_path = self.preview_dir / debug_filename
+            cv2.imwrite(str(debug_path), img_cv)
+            print(f"💾 Debug image saved: {debug_path}")
+            print(f"  Debug file size: {os.path.getsize(debug_path)} bytes")
+            
+            file_debugger.log_operation("DEBUG_IMAGE_SAVED", debug_path, {
+                "source": brochure_path,
+                "size": os.path.getsize(debug_path)
+            })
+            
+            # Load with moviepy
+            print("📽️ Loading with MoviePy...")
+            brochure_clip = ImageClip(brochure_path)
+            print(f"✅ MoviePy loaded clip")
+            print(f"  Original size: {brochure_clip.size}")
+            
+            file_debugger.log_operation("MOVIEPY_LOADED", brochure_path, {
+                "size": brochure_clip.size
+            })
+            
+            # Get dimensions and resize for 9:16 (portrait/vertical)
+            target_width = 1080
+            target_height = 1920
+            print(f"🎯 Target dimensions: {target_width}x{target_height}")
+            
+            # Resize to fit height, maintain aspect ratio
+            brochure_clip = brochure_clip.resize(height=target_height)
+            print(f"  Resized to: {brochure_clip.size}")
+            
+            # Create background
+            bg = ColorClip(size=(target_width, target_height), color=(0, 0, 0))
+            bg = bg.set_duration(10)  # 10 seconds duration
+            
+            # Center the brochure on background
+            brochure_x = (target_width - brochure_clip.w) // 2
+            print(f"  Centering at x={brochure_x}")
+            
+            if brochure_x < 0:
+                # If image is wider than target, crop
+                brochure_clip = brochure_clip.crop(width=target_width)
+                brochure_x = 0
+                print(f"  Image wider than target, cropped to {brochure_clip.size}")
+                
+            brochure_clip = brochure_clip.set_position((brochure_x, 0))
+            
+            # Combine background and brochure
+            final_clip = CompositeVideoClip([bg, brochure_clip])
+            print(f"✅ Composite clip created with background")
+            
+            # Create text overlays
+            print("📝 Creating text overlays...")
+            overlays = self.create_text_overlays(info)
+            print(f"  Created {len(overlays)} text overlays")
+            
+            # Combine all overlays with the brochure
+            if overlays:
+                final_clip = CompositeVideoClip([final_clip] + overlays)
+                print(f"  Added {len(overlays)} overlays to video")
+            
+            # Add fade in/out effects
+            print("🎨 Adding fade effects...")
+            final_clip = fadein(final_clip, 0.5)
+            final_clip = fadeout(final_clip, 0.5)
+            
+            # Generate output filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_filename = f"brochure_{Path(brochure_path).stem}_{timestamp}.mp4"
+            output_path = self.output_dir / output_filename
+            print(f"💾 Saving video to: {output_path}")
+            
+            # Write the video file
+            print("⏳ Rendering video (this may take a moment)...")
+            final_clip.write_videofile(
+                str(output_path),
+                fps=24,
+                codec='libx264',
+                audio_codec='aac',
+                threads=4,
+                verbose=False,
+                logger=None
+            )
+            print("✅ Video rendering complete")
+            
+            # Verify video was created
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+                file_size = os.path.getsize(output_path)
+                print(f"✅ Video created successfully")
+                print(f"  Location: {output_path}")
+                print(f"  Size: {file_size:,} bytes ({file_size/1024/1024:.2f} MB)")
+                
+                file_debugger.log_operation("VIDEO_SAVED", output_path, {
+                    "source": brochure_path,
+                    "size": file_size,
+                    "duration": 10
+                })
+            else:
+                logging.error("Video file is empty or missing")
+                print("❌ ERROR: Video file is empty or missing!")
+                file_debugger.log_operation("ERROR", output_path, {"error": "Empty or missing video"})
+                return self.create_fallback_video(info)
+            
+            # Clean up
+            final_clip.close()
+            
+            # Final debug summary
+            print("\n" + "="*80)
+            print("📊 VIDEO CREATION SUMMARY")
+            print("="*80)
+            print(f"✅ Source image: {brochure_path} (exists: {os.path.exists(brochure_path)})")
+            print(f"✅ Debug image: {debug_path} (size: {os.path.getsize(debug_path)} bytes)")
+            print(f"✅ Video output: {output_path} (size: {os.path.getsize(output_path)} bytes)")
+            print(f"📄 Debug log: brochure_debug.log")
+            print("="*80 + "\n")
+            
+            return str(output_path)
+            
+        except Exception as e:
+            logging.error(f"Error creating video: {e}")
+            print(f"❌ ERROR creating video: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            file_debugger.log_operation("ERROR", brochure_path, {
+                "error": str(e),
+                "traceback": traceback.format_exc()
+            })
+            
+            # Fallback: create a simple text-only video
+            return self.create_fallback_video(info)
+
+    def create_text_overlays(self, info):
+        """Create text overlays for the video"""
+        overlays = []
+        print("  Creating text overlays...")
+        
+        # 1. Tournament Name (Top)
+        if info.get('tournament_name'):
+            tournament_text = info['tournament_name'][:50]  # Limit length
+            print(f"    - Tournament: {tournament_text}")
+            txt_clip = self.create_text_clip(
+                tournament_text,
+                fontsize=60,
+                color='white',
+                stroke_color='black',
+                stroke_width=3,
+                position=('center', 0.08),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 2. Venue (Middle)
+        if info.get('venue'):
+            venue_text = f"📍 {info['venue']}"
+            print(f"    - Venue: {venue_text}")
+            txt_clip = self.create_text_clip(
+                venue_text,
+                fontsize=40,
+                color='yellow',
+                stroke_color='black',
+                stroke_width=2,
+                position=('center', 0.45),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 3. Dates (Middle-Bottom)
+        if info.get('dates'):
+            dates_text = f"📅 {', '.join(info['dates'][:3])}"
+            print(f"    - Dates: {dates_text}")
+            txt_clip = self.create_text_clip(
+                dates_text,
+                fontsize=36,
+                color='white',
+                stroke_color='black',
+                stroke_width=2,
+                position=('center', 0.55),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 4. Prize Fund (Bottom)
+        if info.get('prize_fund'):
+            prize_text = f"🏆 Prize: ₹{info['prize_fund']}"
+            print(f"    - Prize: {prize_text}")
+            txt_clip = self.create_text_clip(
+                prize_text,
+                fontsize=42,
+                color='gold',
+                stroke_color='black',
+                stroke_width=2,
+                position=('center', 0.75),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 5. Entry Fee (Bottom)
+        if info.get('entry_fee'):
+            fee_text = f"💰 Entry: ₹{info['entry_fee']}"
+            print(f"    - Entry Fee: {fee_text}")
+            txt_clip = self.create_text_clip(
+                fee_text,
+                fontsize=36,
+                color='white',
+                stroke_color='black',
+                stroke_width=2,
+                position=('center', 0.85),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 6. Contact/Email (Bottom-Right)
+        contact_info = []
+        if info.get('contact'):
+            contact_info.append(f"📞 {info['contact'][0]}")
+        if info.get('email'):
+            contact_info.append(f"✉️ {info['email'][0]}")
+        
+        if contact_info:
+            contact_text = ' | '.join(contact_info)
+            print(f"    - Contact: {contact_text}")
+            txt_clip = self.create_text_clip(
+                contact_text,
+                fontsize=28,
+                color='white',
+                stroke_color='black',
+                stroke_width=1,
+                position=('center', 0.92),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        # 7. Categories (if available)
+        if info.get('categories'):
+            categories_text = f"Categories: {', '.join(info['categories'][:6])}"
+            print(f"    - Categories: {categories_text}")
+            txt_clip = self.create_text_clip(
+                categories_text,
+                fontsize=30,
+                color='lightblue',
+                stroke_color='black',
+                stroke_width=1,
+                position=('center', 0.65),
+                duration=10
+            )
+            overlays.append(txt_clip)
+        
+        print(f"  Total overlays: {len(overlays)}")
+        return overlays
+
+    def create_text_clip(self, text, fontsize=40, color='white', 
+                          stroke_color='black', stroke_width=2, 
+                          position=('center', 'center'), duration=10):
+        """Helper to create styled text clips"""
+        try:
+            # Try with stroke first
+            return TextClip(
+                text,
+                fontsize=fontsize,
+                color=color,
+                stroke_color=stroke_color,
+                stroke_width=stroke_width,
+                font='Arial',
+                method='label',
+                size=(1080, None)  # Max width
+            ).set_position(position).set_duration(duration)
+        except:
+            # Fallback without stroke
+            return TextClip(
+                text,
+                fontsize=fontsize,
+                color=color,
+                font='Arial',
+                method='label',
+                size=(1080, None)
+            ).set_position(position).set_duration(duration)
+
+    def create_fallback_video(self, info):
+        """Create a simple video when image processing fails"""
+        print("\n" + "="*80)
+        print("⚠️ CREATING FALLBACK VIDEO (Image failed to load)")
+        print("="*80)
+        
+        logging.warning("Creating fallback text-only video")
+        file_debugger.log_operation("FALLBACK_VIDEO_START", None, info)
+        
+        # Create a gradient background
+        from moviepy.video.VideoClip import VideoClip
+        
+        def make_frame(t):
+            # Create gradient from dark blue to dark purple
+            frame = np.zeros((1920, 1080, 3), dtype=np.uint8)
+            for y in range(1920):
+                ratio = y / 1920
+                color = (int(20 + 30*ratio), int(10 + 20*ratio), int(40 + 60*ratio))
+                frame[y, :] = color
+            return frame
+        
+        bg = VideoClip(make_frame, duration=10)
+        bg = bg.resize((1080, 1920))
+        
+        # Add tournament name
+        title = info.get('tournament_name', 'Chess Tournament')
+        print(f"  Title: {title}")
+        txt1 = self.create_text_clip(
+            title, 
+            fontsize=70, 
+            color='white',
+            position=('center', 0.4),
+            duration=10
+        )
+        
+        # Add extracted info
+        info_lines = []
+        if info.get('venue'):
+            info_lines.append(f"📍 {info['venue']}")
+        if info.get('dates'):
+            info_lines.append(f"📅 {', '.join(info['dates'][:2])}")
+        if info.get('prize_fund'):
+            info_lines.append(f"🏆 ₹{info['prize_fund']}")
+        
+        info_text = '\n'.join(info_lines)
+        print(f"  Info text: {info_text}")
+        txt2 = self.create_text_clip(
+            info_text,
+            fontsize=40,
+            color='yellow',
+            position=('center', 0.6),
+            duration=10
+        )
+        
+        # Combine
+        final = CompositeVideoClip([bg, txt1, txt2])
+        
+        # Add fade effects
+        final = fadein(final, 0.5)
+        final = fadeout(final, 0.5)
+        
+        # Save fallback video
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = self.output_dir / f"fallback_brochure_{timestamp}.mp4"
+        print(f"💾 Saving fallback video: {output_path}")
+        
+        final.write_videofile(
+            str(output_path),
+            fps=24,
+            codec='libx264',
+            verbose=False,
+            logger=None
+        )
+        
+        final.close()
+        
+        file_debugger.log_operation("FALLBACK_VIDEO_SAVED", output_path, {
+            "size": os.path.getsize(output_path) if os.path.exists(output_path) else 0
+        })
+        
+        print(f"✅ Fallback video saved: {output_path}")
+        return str(output_path)
+
+    def preview_and_confirm(self, video_path):
+        """
+        Preview the video and ask user for confirmation
+        Returns True if user wants to upload, False otherwise
+        """
+        print("\n" + "="*80)
+        print("👁️ VIDEO PREVIEW & CONFIRMATION")
+        print("="*80)
+        
+        if not video_path or not os.path.exists(video_path):
+            logging.error(f"Video file not found: {video_path}")
+            print(f"❌ Video file not found: {video_path}")
+            file_debugger.log_operation("PREVIEW_ERROR", video_path, {"error": "File not found"})
+            return False
+        
+        video_size = os.path.getsize(video_path)
+        print(f"📁 Video file: {video_path}")
+        print(f"📊 Video size: {video_size:,} bytes ({video_size/1024/1024:.2f} MB)")
+        
+        if video_size < 1000:  # Less than 1KB - likely corrupted
+            logging.error(f"Video file too small ({video_size} bytes), likely corrupted")
+            print(f"❌ Video file too small ({video_size} bytes), likely corrupted!")
+            file_debugger.log_operation("PREVIEW_ERROR", video_path, {"error": "File too small"})
+            return False
+        
+        print("\n📹 The video will now open for preview...")
+        
+        # Try to open the video with default player
+        try:
+            if sys.platform == 'win32':
+                os.startfile(video_path)
+            elif sys.platform == 'darwin':  # macOS
+                subprocess.run(['open', video_path])
+            else:  # Linux
+                subprocess.run(['xdg-open', video_path])
+            print("✅ Video player opened.")
+        except Exception as e:
+            print(f"⚠️ Could not auto-open video: {e}")
+            print(f"Please manually open: {video_path}")
+        
+        print("\n" + "-"*70)
+        print("🎬 VIDEO PREVIEW OPTIONS:")
+        print("  y = Yes, upload this video")
+        print("  n = No, skip upload")
+        print("  v = View video again")
+        print("  l = Show debug log")
+        print("-"*70)
+        
+        while True:
+            choice = input("📤 Upload this video? (y/n/v/l): ").lower().strip()
+            
+            if choice == 'y':
+                print("✅ Upload confirmed!")
+                file_debugger.log_operation("UPLOAD_CONFIRMED", video_path)
+                return True
+            elif choice == 'n':
+                print("❌ Upload skipped.")
+                file_debugger.log_operation("UPLOAD_SKIPPED", video_path)
+                return False
+            elif choice == 'v':
+                try:
+                    if sys.platform == 'win32':
+                        os.startfile(video_path)
+                    elif sys.platform == 'darwin':
+                        subprocess.run(['open', video_path])
+                    else:
+                        subprocess.run(['xdg-open', video_path])
+                    print("✅ Video opened again.")
+                except:
+                    print(f"Please manually open: {video_path}")
+            elif choice == 'l':
+                # Show the debug log
+                try:
+                    with open("brochure_debug.log", 'r') as f:
+                        log_content = f.read()
+                        print("\n" + "="*80)
+                        print("📄 DEBUG LOG (last 50 lines):")
+                        print("="*80)
+                        lines = log_content.splitlines()
+                        for line in lines[-50:]:
+                            print(line)
+                        print("="*80 + "\n")
+                except:
+                    print("Could not read debug log.")
+            else:
+                print("Please enter: 'y' (yes), 'n' (no), 'v' (view again), or 'l' (show log)")
+
+    # All extraction methods below...
+    def find_tournament(self, text):
+        lines = text.splitlines()
+        for line in lines:
+            if "CHESS" in line.upper():
+                return line.strip()
+        return ""
+
+    def find_dates(self, text):
+        pattern = r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"
+        return re.findall(pattern, text)
+
+    def find_contact(self, text):
+        pattern = r"(?:\+91[- ]?)?[6-9]\d{9}"
+        return re.findall(pattern, text)
+
+    def find_email(self, text):
+        pattern = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+        return re.findall(pattern, text)
+
+    def find_website(self, text):
+        pattern = r"(https?://\S+|www\.\S+)"
+        return re.findall(pattern, text)
+
+    def find_entry_fee(self, text):
+        pattern = r"(?:Entry Fee|Registration Fee|Fee)\D{0,10}₹?\s?([\d,]+)"
+        match = re.search(pattern, text, re.IGNORECASE)
+        return match.group(1) if match else ""
+
+    def find_prize(self, text):
+        pattern = r"(?:Prize Fund|Total Prize|Prize)\D{0,10}₹?\s?([\d,]+)"
+        match = re.search(pattern, text, re.IGNORECASE)
+        return match.group(1) if match else ""
+
+    def find_categories(self, text):
+        categories = []
+        possible = ["U7","U9","U11","U13","U15","U17","U19","Open","Women"]
+        upper = text.upper()
+        for cat in possible:
+            if cat in upper:
+                categories.append(cat)
+        return categories
+
+    def find_venue(self, text):
+        lines = text.splitlines()
+        keywords = ["VENUE", "LOCATION", "ADDRESS"]
+        for i, line in enumerate(lines):
+            for key in keywords:
+                if key in line.upper():
+                    if i + 1 < len(lines):
+                        return lines[i + 1].strip()
+        return ""

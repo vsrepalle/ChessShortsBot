@@ -1,0 +1,13 @@
+﻿folders:
+  archive: inputs/archive
+
+youtube:
+  uploadRetries: 3
+  retryDelay: 5
+
+channels:
+  educational:
+    channel_name: "Chess Games & Tournament"
+    channel_id: "YOUR_CHANNEL_ID_HERE"
+    upload_privacy: "private"
+    category: "Education"

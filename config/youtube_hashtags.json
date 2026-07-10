@@ -1,0 +1,11 @@
+﻿{
+  "general": ["chess", "chessshorts"],
+  "shorts": ["shorts"],
+  "brochure": ["tournament", "chess"],
+  "advertisement": ["chess"],
+  "training": ["chess"],
+  "openings": {},
+  "limits": {
+    "maximum_hashtags": 15
+  }
+}
