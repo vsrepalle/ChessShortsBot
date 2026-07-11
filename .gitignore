@@ -1,66 +1,107 @@
-# ==========================================
-# Build Artifacts
-# ==========================================
-build/
-dist/
-*.spec
-
-# PyInstaller Executable
-ChessShortsCreator.exe
-
-# ==========================================
-# Google OAuth Credentials
-# ==========================================
-client_secret.json
-client_secrets.json
-token.json
-
-config/client_secret.json
-config/client_secrets.json
-config/token.json
-
-# ==========================================
+# =====================================================
 # Python
-# ==========================================
+# =====================================================
 __pycache__/
 *.py[cod]
 *.pyo
-
-# ==========================================
-# Environment
-# ==========================================
-.env
+*.pyd
+*.so
+*.egg-info/
 .venv/
 venv/
+env/
 
-# ==========================================
+# =====================================================
+# IDE
+# =====================================================
+.vscode/
+.idea/
+*.swp
+
+# =====================================================
 # Logs
-# ==========================================
-logs/
+# =====================================================
 *.log
+logs/
+upload_summary.txt
 brochure_debug.log
+chessbot.log
+upload_debug.log
 
-# ==========================================
-# Generated Output
-# ==========================================
+# =====================================================
+# OAuth / Secrets
+# =====================================================
+token.pickle
+token.json
+client_secret.json
+client_secrets.json
+credentials.json
+
+# Config containing secrets (optional)
+config/client_secret.json
+config/client_secrets.json
+
+# =====================================================
+# Environment
+# =====================================================
+.env
+.env.*
+
+# =====================================================
+# Generated Videos
+# =====================================================
 output/
 temp/
+build/
+dist/
 
-# ==========================================
-# Input Processing
-# ==========================================
+# =====================================================
+# User Input Files
+# =====================================================
 inputs/archive/
 inputs/processed/
 inputs/failed/
 
-# ==========================================
-# IDE
-# ==========================================
-.vscode/
-.idea/
+# Optional - don't commit pending test files
+inputs/pending/
 
-# ==========================================
-# Windows
-# ==========================================
+# If you WANT to keep folder structure
+!inputs/pending/
+!inputs/pending/.gitkeep
+!inputs/pending/brochures/
+!inputs/pending/brochures/.gitkeep
+!inputs/pending/pgn/
+!inputs/pending/pgn/.gitkeep
+!inputs/pending/promotional/
+!inputs/pending/promotional/.gitkeep
+
+# =====================================================
+# Media
+# =====================================================
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.bmp
+
+# Keep sample assets
+!assets/**
+!docs/**
+
+# =====================================================
+# Temporary
+# =====================================================
+*.tmp
+*.bak
+*.backup
+*.cache
+
+# =====================================================
+# OS
+# =====================================================
 Thumbs.db
-Desktop.ini
+.DS_Store
