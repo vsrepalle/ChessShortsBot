@@ -38,6 +38,8 @@ class ChessBotWatcher:
         self.input_dir.mkdir(parents=True, exist_ok=True)
         self.archive_dir = Path("inputs/archive")
         self.archive_dir.mkdir(parents=True, exist_ok=True)
+        self.channels_dir = Path("inputs/pending/channels")
+        self.channels_dir.mkdir(parents=True, exist_ok=True)
         
         print("\n" + "="*80)
         print("🚀 CHESS SHORTS BOT STARTING")
@@ -45,13 +47,48 @@ class ChessBotWatcher:
         print(f"Python version: {sys.version}")
         print(f"Current directory: {os.getcwd()}")
         print(f"Input directory: {self.input_dir}")
+        print(f"Channels directory: {self.channels_dir}")
         print(f"Archive directory: {self.archive_dir}")
         print("="*80 + "\n")
         
+        # List existing files in channels
+        self.list_existing_files()
+    
+    def list_existing_files(self):
+        """List all existing files in the channels directory"""
+        print("📁 Existing files in channels:")
+        if self.channels_dir.exists():
+            for channel_dir in self.channels_dir.iterdir():
+                if channel_dir.is_dir():
+                    files = list(channel_dir.glob("*"))
+                    if files:
+                        print(f"   📂 {channel_dir.name}/")
+                        for f in files[:3]:  # Show first 3 files
+                            print(f"      📄 {f.name}")
+                        if len(files) > 3:
+                            print(f"      ... and {len(files) - 3} more")
+                    else:
+                        print(f"   📂 {channel_dir.name}/ (empty)")
+        else:
+            print("   ⚠️ No channels directory found")
+        print()
+    
     def process_file(self, file_path):
         """Process a single file"""
         try:
             print(f"\n📁 Processing: {file_path}")
+            print(f"   File exists: {os.path.exists(file_path)}")
+            
+            # Detect channel from file path
+            file_path_obj = Path(file_path)
+            channel_name = None
+            
+            # Check if file is in a channel folder
+            if "channels" in str(file_path_obj):
+                channel_name = file_path_obj.parent.parent.name
+                print(f"📺 Channel detected: {channel_name}")
+            else:
+                print(f"📺 No channel detected, using default")
             
             # Process the file
             result = self.pipeline.process_file(file_path)
@@ -64,10 +101,10 @@ class ChessBotWatcher:
                 confirm = self.pipeline.brochure_processor.preview_and_confirm(video_path)
                 
                 if confirm:
-                    # Upload the video
-                    print("\n📤 Uploading video...")
+                    # Upload the video with channel info
+                    print(f"\n📤 Uploading video...")
                     metadata = result.get('metadata', {})
-                    success = self.pipeline.upload_video(video_path, metadata)
+                    success = self.pipeline.upload_video(video_path, metadata, channel_name)
                     
                     if success:
                         print("✅ Video uploaded successfully!")
@@ -89,7 +126,15 @@ class ChessBotWatcher:
         """Archive the processed file"""
         try:
             file_path = Path(file_path)
-            dest_path = self.archive_dir / file_path.name
+            # Preserve folder structure in archive
+            if "channels" in str(file_path.parent):
+                # If from channels folder, preserve channel name
+                channel_name = file_path.parent.parent.name
+                archive_channel_dir = self.archive_dir / "channels" / channel_name
+                archive_channel_dir.mkdir(parents=True, exist_ok=True)
+                dest_path = archive_channel_dir / file_path.name
+            else:
+                dest_path = self.archive_dir / file_path.name
             
             # Move file to archive
             shutil.move(str(file_path), str(dest_path))
@@ -101,15 +146,19 @@ class ChessBotWatcher:
     
     def start(self):
         """Start watching the input directory"""
-        # Set up the watcher with correct parameter names
+        # Set up the watcher with recursive=True
         self.watcher = FolderWatcher(
             watch_path=str(self.input_dir),
-            callback=self.process_file
+            callback=self.process_file,
+            recursive=True  # Watch subdirectories
         )
         
         try:
             self.watcher.start()
             print("✅ Watcher started. Press Ctrl+C to stop.")
+            print("📺 To upload to specific channel, place files in:")
+            print(f"   {self.channels_dir}/ChannelName/")
+            print("📁 The watcher will detect files in subdirectories automatically")
             
             # Keep the script running
             while True:
@@ -135,3 +184,5 @@ if __name__ == "__main__":
     # Create and start the watcher
     watcher = ChessBotWatcher(config_path)
     watcher.start()
+
+

@@ -1,107 +1,55 @@
-# =====================================================
 # Python
-# =====================================================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.so
-*.egg-info/
-.venv/
-venv/
-env/
 
-# =====================================================
+# Virtual environment
+venv/
+.venv/
+
 # IDE
-# =====================================================
 .vscode/
 .idea/
-*.swp
 
-# =====================================================
 # Logs
-# =====================================================
 *.log
-logs/
-upload_summary.txt
-brochure_debug.log
-chessbot.log
-upload_debug.log
 
-# =====================================================
-# OAuth / Secrets
-# =====================================================
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Output
+output/
+temp/
+tmp/
+
+# Archives
+inputs/archive/
+
+# Runtime input folders
+inputs/pending/
+!inputs/pending/.gitkeep
+
+# OAuth credentials
 token.pickle
 token.json
 client_secret.json
 client_secrets.json
-credentials.json
 
-# Config containing secrets (optional)
+config/token.json
 config/client_secret.json
-config/client_secrets.json
 
-# =====================================================
-# Environment
-# =====================================================
-.env
-.env.*
+# Channel credentials
+**/credentials/
+**/token.pickle
+**/token.json
+**/client_secret.json
+**/client_secrets.json
 
-# =====================================================
-# Generated Videos
-# =====================================================
-output/
-temp/
-build/
-dist/
-
-# =====================================================
-# User Input Files
-# =====================================================
-inputs/archive/
-inputs/processed/
-inputs/failed/
-
-# Optional - don't commit pending test files
-inputs/pending/
-
-# If you WANT to keep folder structure
-!inputs/pending/
-!inputs/pending/.gitkeep
-!inputs/pending/brochures/
-!inputs/pending/brochures/.gitkeep
-!inputs/pending/pgn/
-!inputs/pending/pgn/.gitkeep
-!inputs/pending/promotional/
-!inputs/pending/promotional/.gitkeep
-
-# =====================================================
-# Media
-# =====================================================
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.jpg
-*.jpeg
-*.png
-*.webp
-*.bmp
-
-# Keep sample assets
-!assets/**
-!docs/**
-
-# =====================================================
-# Temporary
-# =====================================================
-*.tmp
-*.bak
-*.backup
-*.cache
-
-# =====================================================
-# OS
-# =====================================================
+# Windows
 Thumbs.db
+Desktop.ini
+
+# macOS
 .DS_Store

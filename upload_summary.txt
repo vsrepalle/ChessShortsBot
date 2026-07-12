@@ -1,53 +1,75 @@
 ================================================================================
 UPLOAD SUMMARY
 ================================================================================
-Start time: 2026-07-12 08:15:42.242794
-End time: 2026-07-12 08:54:50.617216
-Duration: 2348.37 seconds
-Steps logged: 92
+Start time: 2026-07-12 18:03:11.082447
+End time: 2026-07-12 18:05:08.477547
+Duration: 117.40 seconds
+Steps logged: 82
 Errors: 0
 ================================================================================
 
 Full log:
-================================================================================[2026-07-12 08:15:42.243] [INFO] ================================================================================
-[2026-07-12 08:15:42.243] [INFO] UPLOAD DEBUGGER STARTED AT 2026-07-12 08:15:42.242794
-[2026-07-12 08:15:42.244] [INFO] ================================================================================
-[2026-07-12 08:15:42.244] [INFO] Python version: 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]
-[2026-07-12 08:15:42.244] [INFO] Current directory: C:\VISWA\000000_PYTHON\0000000000JULY 2026\ChessShortsBot
-[2026-07-12 08:15:42.245] [INFO] ================================================================================
-[2026-07-12 08:15:42.245] [INFO] ▶ STEP: YouTubeUploader Initialization
-[2026-07-12 08:15:42.246] [INFO]    Details: {
+================================================================================[2026-07-12 18:03:11.082] [INFO] ================================================================================
+[2026-07-12 18:03:11.083] [INFO] UPLOAD DEBUGGER STARTED AT 2026-07-12 18:03:11.082447
+[2026-07-12 18:03:11.083] [INFO] ================================================================================
+[2026-07-12 18:03:11.084] [INFO] Python version: 3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]
+[2026-07-12 18:03:11.084] [INFO] Current directory: C:\VISWA\000000_PYTHON\0000000000JULY 2026\ChessShortsBot
+[2026-07-12 18:03:11.085] [INFO] ================================================================================
+[2026-07-12 18:03:11.085] [INFO] ▶ STEP: YouTubeUploader Initialization
+[2026-07-12 18:03:11.086] [INFO]    Details: {
   "client_secrets_file": "client_secret.json",
+  "channel_id": null,
   "google_available": true
 }
-[2026-07-12 08:15:42.247] [INFO] ----------------------------------------
-[2026-07-12 08:15:42.247] [INFO]    Client Secrets File: client_secret.json
-[2026-07-12 08:15:42.248] [INFO]    Exists: True
-[2026-07-12 08:15:42.248] [INFO]    Size: 412 bytes (0.00 MB)
-[2026-07-12 08:15:42.249] [INFO]    Modified: 2026-02-08 09:48:55.854731
-[2026-07-12 08:15:42.250] [INFO] ▶ STEP: YouTube Authentication
-[2026-07-12 08:15:42.250] [INFO] ----------------------------------------
-[2026-07-12 08:15:42.251] [INFO]    Token File: token.pickle
-[2026-07-12 08:15:42.251] [INFO]    Exists: True
-[2026-07-12 08:15:42.252] [INFO]    Size: 1,039 bytes (0.00 MB)
-[2026-07-12 08:15:42.252] [INFO]    Modified: 2026-07-12 08:05:05.185497
-[2026-07-12 08:15:42.253] [INFO] Loading existing credentials from token.pickle
-[2026-07-12 08:15:42.274] [INFO] ✅ Credentials loaded successfully
-[2026-07-12 08:15:42.275] [INFO] Credentials valid: True
-[2026-07-12 08:15:42.276] [INFO] Credentials expired: False
-[2026-07-12 08:15:42.276] [INFO] Has refresh token: True
-[2026-07-12 08:15:42.276] [INFO] Using existing valid credentials
-[2026-07-12 08:15:42.277] [INFO] Building YouTube service...
-[2026-07-12 08:15:42.289] [INFO] ✅ YouTube service built successfully
-[2026-07-12 08:48:00.786] [INFO] ▶ STEP: Upload Video to YouTube
-[2026-07-12 08:48:00.787] [INFO] ----------------------------------------
-[2026-07-12 08:48:00.788] [INFO]    Video File: output\videos\brochure_Screenshot 2026-07-12 084619_20260712_084650.mp4
-[2026-07-12 08:48:00.789] [INFO]    Exists: True
-[2026-07-12 08:48:00.791] [INFO]    Size: 1,100,091 bytes (1.05 MB)
-[2026-07-12 08:48:00.792] [INFO]    Modified: 2026-07-12 08:47:49.025841
-[2026-07-12 08:48:00.793] [INFO]    Metadata:
-[2026-07-12 08:48:00.794] [INFO]       Title: Black to win | Chess Tournament
-[2026-07-12 08:48:00.794] [INFO]       YouTube Description: 🏆 BLACK TO WIN
+[2026-07-12 18:03:11.086] [INFO] ----------------------------------------
+[2026-07-12 18:03:11.087] [INFO]    Client Secrets File: client_secret.json
+[2026-07-12 18:03:11.087] [INFO]    Exists: True
+[2026-07-12 18:03:11.087] [INFO]    Size: 412 bytes (0.00 MB)
+[2026-07-12 18:03:11.088] [INFO]    Modified: 2026-02-08 09:48:55.854731
+[2026-07-12 18:03:11.089] [INFO] ▶ STEP: YouTube Authentication
+[2026-07-12 18:03:11.089] [INFO] ----------------------------------------
+[2026-07-12 18:03:11.090] [INFO]    Token File: token.pickle
+[2026-07-12 18:03:11.090] [INFO]    Exists: True
+[2026-07-12 18:03:11.091] [INFO]    Size: 1,039 bytes (0.00 MB)
+[2026-07-12 18:03:11.091] [INFO]    Modified: 2026-07-12 17:22:07.217622
+[2026-07-12 18:03:11.092] [INFO] Loading existing credentials from token.pickle
+[2026-07-12 18:03:11.110] [INFO] ✅ Credentials loaded successfully
+[2026-07-12 18:03:11.111] [INFO] Credentials valid: True
+[2026-07-12 18:03:11.111] [INFO] Credentials expired: False
+[2026-07-12 18:03:11.112] [INFO] Has refresh token: True
+[2026-07-12 18:03:11.112] [INFO] Using existing valid credentials
+[2026-07-12 18:03:11.112] [INFO] Building YouTube service...
+[2026-07-12 18:03:11.123] [INFO] ✅ YouTube service built successfully
+[2026-07-12 18:04:52.642] [INFO] ▶ STEP: Upload Video to YouTube (PRIVATE - FORCED)
+[2026-07-12 18:04:52.643] [INFO] ----------------------------------------
+[2026-07-12 18:04:52.643] [INFO] Channel: TrendWave Now
+[2026-07-12 18:04:52.644] [INFO] ▶ STEP: YouTube Authentication
+[2026-07-12 18:04:52.645] [INFO] ----------------------------------------
+[2026-07-12 18:04:52.646] [INFO]    Token File: inputs\pending\channels\TrendWave Now\credentials\token.pickle
+[2026-07-12 18:04:52.647] [INFO]    Exists: False
+[2026-07-12 18:04:52.648] [INFO]    Size: 0 bytes (0.00 MB)
+[2026-07-12 18:04:52.648] [INFO] No existing token file found
+[2026-07-12 18:04:52.649] [INFO] Getting new credentials...
+[2026-07-12 18:04:52.649] [INFO] Checking for client secrets file...
+[2026-07-12 18:04:52.650] [INFO]    Client Secrets File: inputs\pending\channels\TrendWave Now\credentials\client_secret.json
+[2026-07-12 18:04:52.651] [INFO]    Exists: True
+[2026-07-12 18:04:52.651] [INFO]    Size: 412 bytes (0.00 MB)
+[2026-07-12 18:04:52.652] [INFO]    Modified: 2026-02-08 09:48:55.854731
+[2026-07-12 18:04:52.652] [INFO] Starting OAuth flow...
+[2026-07-12 18:04:52.653] [INFO] OAuth flow created successfully
+[2026-07-12 18:04:52.654] [INFO] Starting local server for authentication...
+[2026-07-12 18:05:03.717] [INFO] ✅ Authentication completed successfully
+[2026-07-12 18:05:03.718] [INFO] Saving credentials to token.pickle
+[2026-07-12 18:05:03.719] [INFO] ✅ Credentials saved
+[2026-07-12 18:05:03.720] [INFO] Building YouTube service...
+[2026-07-12 18:05:03.727] [INFO] ✅ YouTube service built successfully
+[2026-07-12 18:05:03.728] [INFO]    Video File: output\videos\brochure_Screenshot 2026-07-12 180333_20260712_180346.mp4
+[2026-07-12 18:05:03.729] [INFO]    Exists: True
+[2026-07-12 18:05:03.729] [INFO]    Size: 903,442 bytes (0.86 MB)
+[2026-07-12 18:05:03.731] [INFO]    Modified: 2026-07-12 18:04:43.271092
+[2026-07-12 18:05:03.732] [INFO]    Metadata:
+[2026-07-12 18:05:03.733] [INFO]       Title: Chess Tournament
+[2026-07-12 18:05:03.733] [INFO]       YouTube Description: 🏆 CHESS TOURNAMENT
 
 
 ♟️ Join us for this exciting chess tournament!
@@ -55,113 +77,37 @@ All chess enthusiasts are welcome to participate.
 
 🔹 Register Now!
 🔹 Limited Seats Available!
-[2026-07-12 08:48:00.796] [INFO]       YouTube Hashtags: #Chess #ChessTournament #Blacktowin #ChessLife #ChessGame
-[2026-07-12 08:48:00.796] [INFO] File size: 1,100,091 bytes (1.05 MB)
-[2026-07-12 08:48:00.797] [INFO] ▶ STEP: Preparing YouTube Metadata
-[2026-07-12 08:48:00.798] [INFO] ----------------------------------------
-[2026-07-12 08:48:00.799] [INFO] Title: Black to win | Chess Tournament
-[2026-07-12 08:48:00.799] [INFO] Description length: 157 characters
-[2026-07-12 08:48:00.800] [INFO] Hashtags: #Chess #ChessTournament #Blacktowin #ChessLife #ChessGame
-[2026-07-12 08:48:00.800] [INFO] Video body prepared: {
-  "snippet": {
-    "title": "Black to win | Chess Tournament",
-    "description": "\ud83c\udfc6 BLACK TO WIN\n\n\n\u265f\ufe0f Join us for this exciting chess tournament!\nAll chess enthusiasts are welcome to participate.\n\n\ud83d\udd39 Register Now!\n\ud83d\udd39 Limited Seats Available!",
-    "tags": [
-      "Chess",
-      "ChessTournament",
-      "Blacktowin",
-      "ChessLife",
-      "ChessGame"
-    ],
-    "categoryId": "22"
-  },
-  "status": {
-    "privacyStatus": "public",
-    "madeForKi...
-[2026-07-12 08:48:00.801] [INFO] ▶ STEP: Preparing Media Upload
-[2026-07-12 08:48:00.802] [INFO] ----------------------------------------
-[2026-07-12 08:48:00.803] [INFO] Video file: output\videos\brochure_Screenshot 2026-07-12 084619_20260712_084650.mp4
-[2026-07-12 08:48:00.856] [INFO] ✅ MediaFileUpload created successfully
-[2026-07-12 08:48:00.857] [INFO] ▶ STEP: Creating YouTube Upload Request
-[2026-07-12 08:48:00.857] [INFO] ----------------------------------------
-[2026-07-12 08:48:00.881] [INFO] ✅ Upload request created successfully
-[2026-07-12 08:48:00.882] [INFO] ▶ STEP: Executing Upload
-[2026-07-12 08:48:00.882] [INFO] ----------------------------------------
-[2026-07-12 08:48:00.883] [INFO] Upload attempt 1/3
-[2026-07-12 08:48:04.359] [INFO] ✅ Upload complete - received response
-[2026-07-12 08:48:04.364] [INFO] ▶ STEP: Upload Complete - Processing Response
-[2026-07-12 08:48:04.365] [INFO] ----------------------------------------
-[2026-07-12 08:48:04.366] [INFO] Video ID: A7amFYYNpTQ
-[2026-07-12 08:48:04.366] [SUCCESS] ✅ SUCCESS: Video uploaded successfully! Video ID: A7amFYYNpTQ
-[2026-07-12 08:48:04.367] [INFO] ================================================================================
+[2026-07-12 18:05:03.734] [INFO]       YouTube Hashtags: #Chess #ChessTournament #ChessLife #ChessGame #ChessMasters
+[2026-07-12 18:05:03.735] [INFO] File size: 903,442 bytes (0.86 MB)
+[2026-07-12 18:05:03.735] [INFO] ▶ STEP: Preparing YouTube Metadata
+[2026-07-12 18:05:03.736] [INFO] ----------------------------------------
+[2026-07-12 18:05:03.737] [INFO] Title: Chess Tournament
+[2026-07-12 18:05:03.737] [INFO] Description length: 161 characters
+[2026-07-12 18:05:03.738] [INFO] Hashtags: #Chess #ChessPuzzles #ChessTournaments #ChessNews #TrendWaveNow #ChessLife
+[2026-07-12 18:05:03.738] [INFO] Channel ID: Default
+[2026-07-12 18:05:03.739] [INFO] ✅ Video privacy: PRIVATE (FORCED)
+[2026-07-12 18:05:03.740] [INFO] ✅ Channel: TrendWave Now
+[2026-07-12 18:05:03.740] [INFO] ▶ STEP: Preparing Media Upload
+[2026-07-12 18:05:03.741] [INFO] ----------------------------------------
+[2026-07-12 18:05:03.741] [INFO] Video file: output\videos\brochure_Screenshot 2026-07-12 180333_20260712_180346.mp4
+[2026-07-12 18:05:03.798] [INFO] ✅ MediaFileUpload created successfully
+[2026-07-12 18:05:03.799] [INFO] ▶ STEP: Creating YouTube Upload Request
+[2026-07-12 18:05:03.800] [INFO] ----------------------------------------
+[2026-07-12 18:05:03.804] [INFO] ✅ Upload request created successfully
+[2026-07-12 18:05:03.804] [INFO] ▶ STEP: Executing Upload (PRIVATE)
+[2026-07-12 18:05:03.805] [INFO] ----------------------------------------
+[2026-07-12 18:05:03.806] [INFO] Upload attempt 1/3
+[2026-07-12 18:05:08.470] [INFO] ✅ Upload complete - received response
+[2026-07-12 18:05:08.472] [INFO] ▶ STEP: Upload Complete - Processing Response
+[2026-07-12 18:05:08.473] [INFO] ----------------------------------------
+[2026-07-12 18:05:08.474] [INFO] Video ID: EIg6js56a0U
+[2026-07-12 18:05:08.475] [SUCCESS] ✅ SUCCESS: Video uploaded as PRIVATE! Video ID: EIg6js56a0U
+[2026-07-12 18:05:08.477] [INFO] ================================================================================
 UPLOAD SUMMARY
 ================================================================================
-Start time: 2026-07-12 08:15:42.242794
-End time: 2026-07-12 08:48:04.367548
-Duration: 1942.12 seconds
-Steps logged: 59
-Errors: 0
-================================================================================
-[2026-07-12 08:54:47.804] [INFO] ▶ STEP: Upload Video to YouTube
-[2026-07-12 08:54:47.805] [INFO] ----------------------------------------
-[2026-07-12 08:54:47.806] [INFO]    Video File: output\videos\brochure_Screenshot 2026-07-12 085329_20260712_085341.mp4
-[2026-07-12 08:54:47.807] [INFO]    Exists: True
-[2026-07-12 08:54:47.808] [INFO]    Size: 1,133,725 bytes (1.08 MB)
-[2026-07-12 08:54:47.809] [INFO]    Modified: 2026-07-12 08:54:38.151845
-[2026-07-12 08:54:47.811] [INFO]    Metadata:
-[2026-07-12 08:54:47.812] [INFO]       Title: Chess Tournament
-[2026-07-12 08:54:47.813] [INFO]       YouTube Description: 🏆 CHESS TOURNAMENT
-
-
-♟️ Join us for this exciting chess tournament!
-All chess enthusiasts are welcome to participate.
-
-🔹 Register Now!
-🔹 Limited Seats Available!
-[2026-07-12 08:54:47.814] [INFO]       YouTube Hashtags: #Chess #ChessTournament #ChessLife #ChessGame #ChessMasters
-[2026-07-12 08:54:47.815] [INFO] File size: 1,133,725 bytes (1.08 MB)
-[2026-07-12 08:54:47.816] [INFO] ▶ STEP: Preparing YouTube Metadata
-[2026-07-12 08:54:47.816] [INFO] ----------------------------------------
-[2026-07-12 08:54:47.817] [INFO] Title: Chess Tournament
-[2026-07-12 08:54:47.818] [INFO] Description length: 161 characters
-[2026-07-12 08:54:47.819] [INFO] Hashtags: #Chess #ChessTournament #ChessLife #ChessGame #ChessMasters
-[2026-07-12 08:54:47.819] [INFO] Video body prepared: {
-  "snippet": {
-    "title": "Chess Tournament",
-    "description": "\ud83c\udfc6 CHESS TOURNAMENT\n\n\n\u265f\ufe0f Join us for this exciting chess tournament!\nAll chess enthusiasts are welcome to participate.\n\n\ud83d\udd39 Register Now!\n\ud83d\udd39 Limited Seats Available!",
-    "tags": [
-      "Chess",
-      "ChessTournament",
-      "ChessLife",
-      "ChessGame",
-      "ChessMasters"
-    ],
-    "categoryId": "22"
-  },
-  "status": {
-    "privacyStatus": "public",
-    "madeForKids": fals...
-[2026-07-12 08:54:47.820] [INFO] ▶ STEP: Preparing Media Upload
-[2026-07-12 08:54:47.821] [INFO] ----------------------------------------
-[2026-07-12 08:54:47.822] [INFO] Video file: output\videos\brochure_Screenshot 2026-07-12 085329_20260712_085341.mp4
-[2026-07-12 08:54:47.823] [INFO] ✅ MediaFileUpload created successfully
-[2026-07-12 08:54:47.823] [INFO] ▶ STEP: Creating YouTube Upload Request
-[2026-07-12 08:54:47.824] [INFO] ----------------------------------------
-[2026-07-12 08:54:47.826] [INFO] ✅ Upload request created successfully
-[2026-07-12 08:54:47.826] [INFO] ▶ STEP: Executing Upload
-[2026-07-12 08:54:47.827] [INFO] ----------------------------------------
-[2026-07-12 08:54:47.828] [INFO] Upload attempt 1/3
-[2026-07-12 08:54:50.614] [INFO] ✅ Upload complete - received response
-[2026-07-12 08:54:50.615] [INFO] ▶ STEP: Upload Complete - Processing Response
-[2026-07-12 08:54:50.615] [INFO] ----------------------------------------
-[2026-07-12 08:54:50.616] [INFO] Video ID: EBFKh-pGPKY
-[2026-07-12 08:54:50.616] [SUCCESS] ✅ SUCCESS: Video uploaded successfully! Video ID: EBFKh-pGPKY
-[2026-07-12 08:54:50.617] [INFO] ================================================================================
-UPLOAD SUMMARY
-================================================================================
-Start time: 2026-07-12 08:15:42.242794
-End time: 2026-07-12 08:54:50.617216
-Duration: 2348.37 seconds
-Steps logged: 92
+Start time: 2026-07-12 18:03:11.082447
+End time: 2026-07-12 18:05:08.477547
+Duration: 117.40 seconds
+Steps logged: 82
 Errors: 0
 ================================================================================

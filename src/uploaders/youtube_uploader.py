@@ -1,5 +1,5 @@
-"""
-YouTube Uploader Module - Handles uploading videos to YouTube
+﻿"""
+YouTube Uploader Module - Handles uploading videos to YouTube with channel support
 """
 
 import os
@@ -7,6 +7,7 @@ import pickle
 import logging
 import sys
 import json
+import re
 import time
 from pathlib import Path
 from datetime import datetime
@@ -31,13 +32,24 @@ from .upload_debugger import UploadDebugger
 SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
 CLIENT_SECRETS_FILE = "client_secret.json"
 
+# Default hashtags for all videos - ALWAYS INCLUDED
+DEFAULT_HASHTAGS = ["#Chess", "#ChessPuzzles", "#ChessTournaments", "#ChessNews"]
+
 class YouTubeUploader:
-    """Handles uploading videos to YouTube with detailed debugging"""
+    """Handles uploading videos to YouTube with channel support"""
     
-    def __init__(self, client_secrets_file=None):
+    def __init__(self, client_secrets_file=None, channel_id=None):
+        """
+        Initialize the YouTube uploader
+        
+        Args:
+            client_secrets_file: Path to client_secrets.json file
+            channel_id: Specific YouTube channel ID to upload to (optional)
+        """
         self.debugger = UploadDebugger("upload_debug.log")
         self.debugger.log_step("YouTubeUploader Initialization", {
             "client_secrets_file": client_secrets_file,
+            "channel_id": channel_id,
             "google_available": GOOGLE_AVAILABLE
         })
         
@@ -46,6 +58,8 @@ class YouTubeUploader:
         self.api_version = "v3"
         self.youtube = None
         self.is_authenticated = False
+        self.channel_id = channel_id  # Specific channel to upload to
+        self.token_file = None  # Will be set per channel
         
         # Log client secrets file info
         self.debugger.log_file_info(self.client_secrets_file, "Client Secrets File")
@@ -59,24 +73,43 @@ class YouTubeUploader:
         
         self.authenticate()
     
-    def authenticate(self):
-        """Authenticate with YouTube API with detailed debugging"""
+    def authenticate(self, client_secrets_file=None, token_file=None):
+        """
+        Authenticate with YouTube API with detailed debugging
+        
+        Args:
+            client_secrets_file: Path to client_secrets.json (optional)
+            token_file: Path to token.pickle (optional)
+        """
         self.debugger.log_step("YouTube Authentication")
         
         if not GOOGLE_AVAILABLE:
             self.debugger.log_error("Cannot authenticate - Google libraries not available")
             return False
         
-        credentials = None
-        token_file = 'token.pickle'
+        # Use provided credentials or defaults
+        client_secret_path = client_secrets_file or self.client_secrets_file
+        token_path = token_file or self.token_file or "token.pickle"
         
-        self.debugger.log_file_info(token_file, "Token File")
+        client_secret = Path(client_secret_path)
+        token_file_path = Path(token_path)
+        
+        print("\n==============================")
+        print("YOUTUBE AUTH")
+        print("==============================")
+        print("Client Secret :", client_secret)
+        print("Token File    :", token_file_path)
+        print("==============================")
+        
+        self.debugger.log_file_info(str(token_file_path), "Token File")
+        
+        credentials = None
         
         # Load existing credentials
         try:
-            if os.path.exists(token_file):
+            if token_file_path.exists():
                 self.debugger.log("Loading existing credentials from token.pickle")
-                with open(token_file, 'rb') as token:
+                with open(token_file_path, 'rb') as token:
                     credentials = pickle.load(token)
                 self.debugger.log("✅ Credentials loaded successfully")
             else:
@@ -102,31 +135,35 @@ class YouTubeUploader:
                     self.debugger.log("✅ Credentials refreshed successfully")
                 else:
                     self.debugger.log("Checking for client secrets file...")
-                    self.debugger.log_file_info(self.client_secrets_file, "Client Secrets File")
+                    self.debugger.log_file_info(str(client_secret), "Client Secrets File")
                     
-                    if not os.path.exists(self.client_secrets_file):
-                        error_msg = f"Client secrets file not found: {self.client_secrets_file}"
+                    if not client_secret.exists():
+                        error_msg = f"Client secrets file not found: {client_secret}"
                         self.debugger.log_error(error_msg, {
                             "suggestion": "Download client_secret.json from Google Cloud Console",
-                            "path": self.client_secrets_file
+                            "path": str(client_secret)
                         })
                         print(f"\n❌ {error_msg}")
                         print("   Please download client_secret.json from Google Cloud Console")
-                        print("   Save it as: client_secret.json in the project root")
+                        print("   Save it as: client_secret.json in the project root or channel credentials folder")
                         return False
                     
                     self.debugger.log("Starting OAuth flow...")
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        self.client_secrets_file, SCOPES)
+                    flow = InstalledAppFlow.from_client_secrets_file(str(client_secret), SCOPES)
                     self.debugger.log("OAuth flow created successfully")
                     
                     self.debugger.log("Starting local server for authentication...")
                     credentials = flow.run_local_server(port=0)
+                    
+                    print("\n✅ OAuth completed")
+                    print(f"Saving token to: {token_file_path}")
                     self.debugger.log("✅ Authentication completed successfully")
                 
                 # Save credentials
                 self.debugger.log("Saving credentials to token.pickle")
-                with open(token_file, 'wb') as token:
+                token_file_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                with open(token_file_path, "wb") as token:
                     pickle.dump(credentials, token)
                 self.debugger.log("✅ Credentials saved")
                 
@@ -152,11 +189,72 @@ class YouTubeUploader:
             print(f"❌ Failed to authenticate with YouTube: {e}")
             return False
     
-    def upload_video(self, video_path, metadata):
+    def get_channel_id(self, channel_name):
         """
-        Upload a video to YouTube with detailed debugging
+        Get YouTube channel ID from channel name
+        This searches for the channel by name
         """
-        self.debugger.log_step("Upload Video to YouTube")
+        if not self.youtube:
+            return None
+        
+        try:
+            # Search for the channel by name
+            self.debugger.log(f"Searching for channel: {channel_name}")
+            request = self.youtube.search().list(
+                part='snippet',
+                q=channel_name,
+                type='channel',
+                maxResults=1
+            )
+            response = request.execute()
+            
+            if response.get('items'):
+                channel_id = response['items'][0]['snippet']['channelId']
+                channel_title = response['items'][0]['snippet']['title']
+                self.debugger.log(f"✅ Found channel: {channel_title} -> {channel_id}")
+                print(f"✅ Found channel: {channel_title}")
+                return channel_id
+            else:
+                self.debugger.log(f"⚠️ Channel not found: {channel_name}")
+                print(f"⚠️ Channel '{channel_name}' not found")
+                return None
+                
+        except Exception as e:
+            self.debugger.log_error(f"Error searching for channel: {e}")
+            print(f"❌ Error searching for channel: {e}")
+            return None
+    
+    def get_default_hashtags(self):
+        """Get default hashtags for all videos"""
+        return " ".join(DEFAULT_HASHTAGS)
+    
+    def upload_video(self, video_path, metadata, channel_name=None):
+        """
+        Upload a video to YouTube as PRIVATE - ALWAYS PRIVATE
+        
+        Args:
+            video_path: Path to the video file
+            metadata: Dictionary with video metadata
+            channel_name: Name of the channel folder (e.g., "BrainRush Puzzles")
+        """
+        self.debugger.log_step(f"Upload Video to YouTube (PRIVATE - FORCED)")
+        self.debugger.log(f"Channel: {channel_name or 'Default'}")
+
+        # Handle channel-specific credentials
+        if channel_name:
+            credentials_dir = Path("inputs/pending/channels") / channel_name / "credentials"
+            client_secret = credentials_dir / "client_secret.json"
+            token_file = credentials_dir / "token.pickle"
+
+            if client_secret.exists():
+                self.client_secrets_file = str(client_secret)
+                self.token_file = str(token_file)
+                print(f"📂 Using channel credentials: {credentials_dir}")
+                # Re-authenticate with channel credentials
+                self.authenticate(
+                    client_secrets_file=str(client_secret),
+                    token_file=str(token_file)
+                )
         
         # Log input parameters
         self.debugger.log_file_info(video_path, "Video File")
@@ -192,25 +290,49 @@ class YouTubeUploader:
             return None
         
         try:
+            # Get channel ID if channel name is provided
+            upload_channel_id = None
+            if channel_name:
+                print(f"\n📺 Using channel: {channel_name}")
+                # Don't search for channel, just use the credentials we already loaded
+                upload_channel_id = self.channel_id
+            
             # Prepare metadata
             self.debugger.log_step("Preparing YouTube Metadata")
             
             title = metadata.get('Title', 'Chess Short')
             description = metadata.get('YouTube Description', '') or metadata.get('Description', '')
-            hashtags = metadata.get('YouTube Hashtags', '')
+            
+            # ALWAYS include default hashtags
+            hashtags = self.get_default_hashtags()
+            
+            # Add channel name as hashtag
+            if channel_name:
+                # Clean channel name for hashtag
+                clean_channel = re.sub(r'[^a-zA-Z0-9]', '', channel_name.replace(' ', ''))
+                if clean_channel and len(clean_channel) > 3:
+                    hashtags += f" #{clean_channel}"
+            
+            # Add any additional hashtags from metadata
+            if metadata.get('YouTube Hashtags'):
+                additional = metadata.get('YouTube Hashtags').replace('#', '').split()
+                for tag in additional[:3]:  # Limit additional tags
+                    if tag not in hashtags:
+                        hashtags += f" #{tag}"
             
             self.debugger.log(f"Title: {title}")
             self.debugger.log(f"Description length: {len(description)} characters")
             self.debugger.log(f"Hashtags: {hashtags}")
+            self.debugger.log(f"Channel ID: {upload_channel_id or 'Default'}")
             
             if not description:
                 self.debugger.log("No description provided, generating default")
-                description = f"🏆 {title}\n\n♟️ Check out this chess content!"
-                if hashtags:
-                    description += f"\n\n{hashtags}"
+                description = f"♟️ Chess Short\n\n{hashtags}"
                 self.debugger.log(f"Generated description: {description[:100]}...")
+            elif hashtags not in description:
+                description = f"{description}\n\n{hashtags}"
             
-            # Prepare video body
+            # Prepare video body - FORCE PRIVATE
             body = {
                 'snippet': {
                     'title': title,
@@ -219,12 +341,18 @@ class YouTubeUploader:
                     'categoryId': '22'  # 22 = People & Blogs
                 },
                 'status': {
-                    'privacyStatus': 'public',
-                    'madeForKids': False
+                    'privacyStatus': 'private',  # FORCED PRIVATE
+                    'madeForKids': False,
+                    'selfDeclaredMadeForKids': False
                 }
             }
             
-            self.debugger.log(f"Video body prepared: {json.dumps(body, indent=2, default=str)[:500]}...")
+            # Add channel ID if found
+            if upload_channel_id:
+                body['snippet']['channelId'] = upload_channel_id
+            
+            self.debugger.log(f"✅ Video privacy: PRIVATE (FORCED)")
+            self.debugger.log(f"✅ Channel: {channel_name or 'Default'}")
             
             # Prepare media upload
             self.debugger.log_step("Preparing Media Upload")
@@ -256,10 +384,12 @@ class YouTubeUploader:
                 return None
             
             # Execute upload
-            self.debugger.log_step("Executing Upload")
+            self.debugger.log_step("Executing Upload (PRIVATE)")
             print(f"\n📤 Uploading video to YouTube...")
             print(f"   Title: {title}")
-            print(f"   File: {video_path_str}")
+            print(f"   Channel: {channel_name or 'Default'}")
+            print(f"   🔒 Privacy: PRIVATE (forced)")
+            print(f"   📋 Hashtags: {hashtags}")
             
             response = None
             upload_complete = False
@@ -313,10 +443,13 @@ class YouTubeUploader:
                 self.debugger.log(f"Video ID: {video_id}")
                 
                 if video_id:
-                    self.debugger.log_success(f"Video uploaded successfully! Video ID: {video_id}")
-                    print(f"✅ Video uploaded successfully!")
-                    print(f"   Video ID: {video_id}")
-                    print(f"   URL: https://www.youtube.com/watch?v={video_id}")
+                    self.debugger.log_success(f"Video uploaded as PRIVATE! Video ID: {video_id}")
+                    print(f"\n✅ Video uploaded successfully!")
+                    print(f"   📺 Channel: {channel_name or 'Default'}")
+                    print(f"   🔒 Privacy: PRIVATE")
+                    print(f"   🆔 Video ID: {video_id}")
+                    print(f"   🔗 URL: https://www.youtube.com/watch?v={video_id}")
+                    print(f"   📋 Hashtags: {hashtags}")
                     
                     # Save summary
                     self.debugger.save_summary()
@@ -324,7 +457,10 @@ class YouTubeUploader:
                     return {
                         'video_id': video_id,
                         'url': f"https://www.youtube.com/watch?v={video_id}",
-                        'title': title
+                        'title': title,
+                        'channel': channel_name or 'Default',
+                        'privacy': 'private',
+                        'hashtags': hashtags
                     }
                 else:
                     self.debugger.log_error("No video ID in response", {"response": response})
@@ -349,7 +485,7 @@ class YouTubeUploader:
             self.debugger.save_summary()
             return None
     
-    def set_privacy(self, video_id, privacy_status='public'):
+    def set_privacy(self, video_id, privacy_status='private'):
         """Change privacy status of a video"""
         if not self.youtube:
             return False
