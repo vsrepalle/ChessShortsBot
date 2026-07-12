@@ -1,55 +1,54 @@
-# Python
+﻿# Build and distribution - IGNORE ALL
+build/
+dist/
+*.exe
+*.pkg
+*.pyz
+*.pyc
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
 
-# Virtual environment
-venv/
-.venv/
+# Videos and large files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
 
-# IDE
+# Logs and data
+*.log
+*.pickle
+token.pickle
+*.db
+*.sqlite
+upload_debug.log
+brochure_debug.log
+chessbot.log
+
+# Output files
+output/
+uploads/
+uploaded/
+archive/
+
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Logs
-*.log
-
-# Python cache
-.pytest_cache/
-.mypy_cache/
-
-# Output
-output/
-temp/
-tmp/
-
-# Archives
-inputs/archive/
-
-# Runtime input folders
-inputs/pending/
-!inputs/pending/.gitkeep
-
-# OAuth credentials
-token.pickle
-token.json
-client_secret.json
-client_secrets.json
-
-config/token.json
-config/client_secret.json
-
-# Channel credentials
-**/credentials/
-**/token.pickle
-**/token.json
-**/client_secret.json
-**/client_secrets.json
-
-# Windows
-Thumbs.db
-Desktop.ini
-
-# macOS
+# OS files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+venv/
+env/
+.env
+
+# Test files
+test_*.py
+*_test.py
