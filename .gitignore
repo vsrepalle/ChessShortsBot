@@ -1,13 +1,96 @@
-﻿# Build and distribution - IGNORE ALL
+﻿# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================================
+# Build / Distribution
+# ============================================
 build/
 dist/
+*.egg-info/
+*.egg
 *.exe
 *.pkg
-*.pyz
-*.pyc
-__pycache__/
+*.spec
 
-# Videos and large files
+# ============================================
+# Virtual Environments
+# ============================================
+venv/
+env/
+.venv/
+.env
+.python-version
+
+# ============================================
+# IDE
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================================
+# Operating System
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+._*
+
+# ============================================
+# Logs
+# ============================================
+*.log
+upload_debug.log
+brochure_debug.log
+chessbot.log
+
+# ============================================
+# Databases
+# ============================================
+*.db
+*.sqlite
+
+# ============================================
+# OAuth / Credentials (NEVER COMMIT)
+# ============================================
+client_secret.json
+client_secrets.json
+credentials.json
+token.json
+token.pickle
+*.pickle
+
+config/client_secret.json
+config/client_secrets.json
+config/credentials.json
+config/token.json
+
+**/credentials/
+
+# ============================================
+# Generated Output
+# ============================================
+output/
+uploads/
+uploaded/
+archive/
+
+# ============================================
+# Input Working Files (Optional)
+# Uncomment if these folders only contain temporary files
+# ============================================
+# inputs/pending/
+# inputs/processing/
+# inputs/completed/
+
+# ============================================
+# Generated Videos
+# ============================================
 *.mp4
 *.avi
 *.mov
@@ -17,46 +100,28 @@ __pycache__/
 *.webm
 *.m4v
 
-# Logs and data
-*.log
-*.pickle
-token.pickle
-*.db
-*.sqlite
-upload_debug.log
-brochure_debug.log
-chessbot.log
+# ============================================
+# Browser Downloads
+# ============================================
+*.crdownload
+*.download
 
-# Output files
-output/
-uploads/
-uploaded/
-archive/
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.bak
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
+# ============================================
+# Jupyter
+# ============================================
+.ipynb_checkpoints/
 
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Environment
-venv/
-env/
-.env
-
-# Test files
+# ============================================
+# Test Files
+# ============================================
 test_*.py
 *_test.py
 
-config/client_secrets.json
-config/client_secret.json
-config/token.json
-token.json
-token.pickle
-*.pickle
-**/credentials/
+credentials/
